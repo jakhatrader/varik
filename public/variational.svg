@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <rect width="400" height="400" rx="0" fill="#0d1424"/>
-  <g fill="none" stroke="#4f8bff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
-    <!-- big peak (left side of the A) -->
-    <path d="M70 300 C 70 300, 150 110, 200 110 C 245 110, 300 250, 320 300"/>
-    <!-- inner / second peak nested inside -->
-    <path d="M150 300 C 165 235, 205 165, 235 175 C 270 187, 300 255, 312 300"/>
-  </g>
-</svg>
