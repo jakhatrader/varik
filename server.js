@@ -32,15 +32,17 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 const KEY = process.env.TWITTERAPI_KEY || '';
 // History floor. EMPTY = index everything back to the very first Variational tweet
 // (i.e. from @variational_io's first post). Set a date like 2024-01-01 to limit it.
-const SINCE_DATE = process.env.SINCE_DATE || '';
+const SINCE_DATE = process.env.SINCE_DATE || '2024-02-01';
 const UPDATE_INTERVAL_HOURS = parseFloat(process.env.UPDATE_INTERVAL_HOURS || '24');
 const CACHE_TTL_MS = Math.max(0.1, UPDATE_INTERVAL_HOURS) * 3600 * 1000;
 // Pages of history pulled per backfill chunk (~20 tweets/page). Resumable across runs.
-const BACKFILL_PAGES_PER_RUN = parseInt(process.env.BACKFILL_PAGES_PER_RUN || '50', 10);
+const BACKFILL_PAGES_PER_RUN = parseInt(process.env.BACKFILL_PAGES_PER_RUN || '3', 10);
 // While backfilling, run a new chunk this often (ms) so history fills in fast.
-const BACKFILL_INTERVAL_MS = parseInt(process.env.BACKFILL_INTERVAL_MS || '15000', 10);
+const BACKFILL_INTERVAL_MS = parseInt(process.env.BACKFILL_INTERVAL_MS || '300000', 10);
 // Safety cap for the "new tweets" fetch each refresh.
-const INCREMENTAL_MAX_PAGES = parseInt(process.env.INCREMENTAL_MAX_PAGES || '40', 10);
+const INCREMENTAL_MAX_PAGES = parseInt(process.env.INCREMENTAL_MAX_PAGES || '5', 10);
+// HARD daily cap on twitterapi.io requests so credits can NEVER run away.
+const MAX_REQUESTS_PER_DAY = parseInt(process.env.MAX_REQUESTS_PER_DAY || '500', 10);
 const POSTS_PER_USER = parseInt(process.env.POSTS_PER_USER || '25', 10);
 const TOP_LIMIT = parseInt(process.env.TOP_LIMIT || '2000', 10);
 const STORE_FILE = process.env.STORE_FILE || path.join(__dirname, 'store.json');
@@ -50,6 +52,15 @@ const TERMS = process.env.QUERY_TERMS || '(variational OR @variational_io OR $VA
 const EXCLUDE_HANDLES = (process.env.EXCLUDE_HANDLES || 'variational_io')
 	.toLowerCase().split(',').map((s) => s.trim().replace(/^@+/, '')).filter(Boolean);
 const API = 'https://api.twitterapi.io';
+
+// ---- hard daily API budget: protects your twitterapi.io credits ----
+let apiDay = '';
+let apiCallsToday = 0;
+function apiBudgetOk() {
+	const today = new Date().toISOString().slice(0, 10);
+	if (today !== apiDay) { apiDay = today; apiCallsToday = 0; }
+	return apiCallsToday < MAX_REQUESTS_PER_DAY;
+}
 
 // ---- external store (Upstash Redis REST) ----
 const REDIS_URL = (process.env.UPSTASH_REDIS_REST_URL || '').replace(/\/+$/, '');
@@ -63,6 +74,8 @@ console.log('[store] backend = ' + (USE_REDIS ? 'Upstash Redis (persistent)' : '
 
 /* ---------------- twitterapi.io client (single page) ---------------- */
 async function searchPage(query, cursor) {
+	if (!apiBudgetOk()) throw new Error('daily API budget reached (' + MAX_REQUESTS_PER_DAY + ' req/day) — paused to protect credits');
+	apiCallsToday++;
 	const u = new URL(API + '/twitter/tweet/advanced_search');
 	u.searchParams.set('query', query);
 	u.searchParams.set('queryType', 'Latest');
@@ -383,7 +396,7 @@ const server = http.createServer(async (req, res) => {
 	const parsed = url.parse(req.url, true);
 	const p = parsed.pathname;
 	try {
-		if (p === '/api/health') return sendJSON(res, 200, { ok: true, hasKey: !!KEY, store: USE_REDIS ? 'redis' : 'file', indexed: store.count, backfillComplete: store.backfillDone, updateIntervalHours: UPDATE_INTERVAL_HOURS, sinceDate: SINCE_DATE || 'first post' });
+		if (p === '/api/health') return sendJSON(res, 200, { ok: true, hasKey: !!KEY, store: USE_REDIS ? 'redis' : 'file', indexed: store.count, backfillComplete: store.backfillDone, updateIntervalHours: UPDATE_INTERVAL_HOURS, sinceDate: SINCE_DATE || 'first post', apiCallsToday: apiCallsToday, maxRequestsPerDay: MAX_REQUESTS_PER_DAY });
 		if (p === '/api/leaderboard') {
 			if (!KEY) return sendJSON(res, 503, { error: 'no_api_key' });
 			return sendJSON(res, 200, await getLeaderboard());
