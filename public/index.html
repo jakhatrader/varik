@@ -173,9 +173,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 .pov-prof-chart svg{width:100%;height:100%;display:block;}
 .pov-chart-svg{position:absolute;inset:0;}
 .pov-tick-layer{position:absolute;inset:0;}
-.pov-tick{position:absolute;top:0;bottom:20px;width:0;border-left:1px solid rgba(79,210,255,0.13);}
-.pov-tick::before{content:"";position:absolute;left:-5px;right:-5px;top:0;bottom:0;}
-.pov-tick:hover{border-left-color:rgba(79,210,255,0.95);box-shadow:0 0 9px rgba(79,210,255,0.55);z-index:4;}
+.pov-ctick{position:absolute;top:0;bottom:20px;width:0;border-left:1px solid rgba(79,210,255,0.13);}
+.pov-ctick::before{content:"";position:absolute;left:-5px;right:-5px;top:0;bottom:0;}
+.pov-ctick:hover{border-left-color:rgba(79,210,255,0.95);box-shadow:0 0 9px rgba(79,210,255,0.55);z-index:4;}
 .pov-axis{position:absolute;left:0;right:0;bottom:3px;height:16px;pointer-events:none;}
 .pov-axis-lbl{position:absolute;transform:translateX(-50%);font-size:10px;letter-spacing:.03em;color:var(--text-dim);white-space:nowrap;}
 .pov-axis-lbl:first-child{transform:translateX(0);}
@@ -459,7 +459,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			'<defs><linearGradient id="paf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d7bff" stop-opacity="0.34"/><stop offset="1" stop-color="#3d7bff" stop-opacity="0"/></linearGradient>'+
 			'<linearGradient id="plf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4fd2ff"/><stop offset="1" stop-color="#3d7bff"/></linearGradient></defs>'+
 			'<path d="'+area+'" fill="url(#paf)"/><path d="'+d+'" fill="none" stroke="url(#plf)" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-		var ticks='';for(var j=0;j<n;j++){var p=series[j];var tip=dateLabel(p.t)+' · '+compact(p.v)+' views'+(p.text?(' — '+p.text):'');ticks+='<a class="pov-tick" style="left:'+(fx(j)*100).toFixed(2)+'%" href="'+escHTML(p.url)+'" target="_blank" rel="noopener" title="'+escHTML(tip)+'"></a>';}
+		var ticks='';for(var j=0;j<n;j++){var p=series[j];var tip=dateLabel(p.t)+' · '+compact(p.v)+' views'+(p.text?(' — '+p.text):'');ticks+='<a class="pov-ctick" style="left:'+(fx(j)*100).toFixed(2)+'%" href="'+escHTML(p.url)+'" target="_blank" rel="noopener" title="'+escHTML(tip)+'"></a>';}
 		var labels='';var L=Math.min(5,n);for(var k=0;k<L;k++){var fr=L===1?0:k/(L-1);labels+='<span class="pov-axis-lbl" style="left:'+(fr*100).toFixed(2)+'%">'+dateLabel(t0+fr*span)+'</span>';}
 		el.innerHTML=svg+'<div class="pov-tick-layer">'+ticks+'</div><div class="pov-axis">'+labels+'</div><div class="pov-guide" id="pGuide"></div><div class="pov-chart-tip" id="pTip"></div>';
 		var guide=document.getElementById('pGuide'),tip=document.getElementById('pTip');
@@ -532,12 +532,13 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		handle=String(handle).replace(/^@+/,'');
 		document.querySelector('main').classList.add('mode-profile');window.scrollTo(0,0);
 		var u=findUser(handle);
-		if(u){var sorted=board.slice().sort(function(a,b){return b.v-a.v;});renderProfile(u,sorted.indexOf(u)+1);return;}
-		document.getElementById('pName').textContent='Loading @'+handle+'\u2026';
-		document.getElementById('pAvatar').innerHTML=avatarHTML(handle,'');
-		document.getElementById('pPostsList').innerHTML='<p class="notion-muted">Loading posts…</p>';
-		if(REAL){fetch('api/user?handle='+esc(handle)).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){var uu=d.user;uu.h=uu.h||handle;renderProfile(uu,d.rank);}).catch(function(){var pu=statsFor(handle);renderProfile(pu,mergeRank(pu));});}
-		else{var pu=statsFor(handle);renderProfile(pu,mergeRank(pu));}
+		if(u){var sorted=board.slice().sort(function(a,b){return b.v-a.v;});renderProfile(u,sorted.indexOf(u)+1);}
+		else{document.getElementById('pName').textContent='Loading @'+handle+'\u2026';document.getElementById('pAvatar').innerHTML=avatarHTML(handle,'');document.getElementById('pPostsList').innerHTML='<p class="notion-muted">Loading posts…</p>';}
+		// Always pull the FULL profile (per-post time series + post list) from the index,
+		// even for accounts already on the leaderboard — the leaderboard payload omits the
+		// per-post series to stay small, so without this the vertical post marks are missing.
+		if(REAL){fetch('api/user?handle='+esc(handle)).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){var uu=d.user;uu.h=uu.h||handle;renderProfile(uu,d.rank);}).catch(function(){if(!u){var pu=statsFor(handle);renderProfile(pu,mergeRank(pu));}});}
+		else if(!u){var pu=statsFor(handle);renderProfile(pu,mergeRank(pu));}
 	}
 	function closeProfile(){document.querySelector('main').classList.remove('mode-profile');}
 	function currentHandle(){var m=location.hash.match(/^#\/u\/(.+)$/);if(m)return decodeURIComponent(m[1]);var pm=location.pathname.match(/^\/u\/([^\/?#]+)/);if(pm)return decodeURIComponent(pm[1]);return null;}
