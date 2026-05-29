@@ -28,6 +28,11 @@ const UPDATE_INTERVAL_HOURS = parseFloat(process.env.UPDATE_INTERVAL_HOURS || '2
 const CACHE_TTL_MS = Math.max(1, UPDATE_INTERVAL_HOURS) * 60 * 60 * 1000;
 const TOP_LIMIT = parseInt(process.env.TOP_LIMIT || '1000', 10);
 const POSTS_PER_USER = parseInt(process.env.POSTS_PER_USER || '25', 10);
+// By default, profile pages are served straight from the cached daily snapshot,
+// so opening profiles costs ZERO API calls no matter how much traffic you get.
+// Set LIVE_PROFILE_SCAN=1 only if you want each profile open to hit the API live
+// (more up-to-date, but cost grows with visitors).
+const LIVE_PROFILE_SCAN = /^(1|true|yes)$/i.test(process.env.LIVE_PROFILE_SCAN || '');
 const CACHE_FILE = process.env.CACHE_FILE || path.join(__dirname, 'cache.json');
 // What counts as a Variational mention. Edit to taste.
 const TERMS = process.env.QUERY_TERMS || '(variational OR @variational_io OR $VAR)';
@@ -216,22 +221,39 @@ async function getLeaderboard() {
 	return kickBuild();
 }
 
-async function scanHandle(handle) {
-	const clean = handle.replace(/^@+/, '').trim();
+// Live scan of a single account (only used when LIVE_PROFILE_SCAN is enabled).
+async function liveScanHandle(clean) {
 	const query = 'from:' + clean + ' ' + TERMS + ' -filter:retweets' + sinceClause();
 	const tweets = await advancedSearch(query, { queryType: 'Latest', maxPages: SCAN_PAGES });
 	const users = aggregate(tweets);
 	let user = users[0];
-	if (!user) {
-		user = { h: clean, name: clean, avatar: '', followers: 0, verified: false, v: 0, l: 0, p: 0, atV: 0, kw: 0, varT: 0, rep: 0, tweets: [] };
-	}
+	if (!user) user = { h: clean, name: clean, avatar: '', followers: 0, verified: false, v: 0, l: 0, p: 0, atV: 0, kw: 0, varT: 0, rep: 0, tweets: [] };
 	finalizeUser(user);
-	let rank = 1;
-	try {
-		const lb = await getLeaderboard();
-		rank = lb.users.filter((u) => u.v > user.v).length + 1;
-	} catch (_) {}
-	return { user, rank };
+	return user;
+}
+
+// Profile lookup. By default this reads from the cached daily snapshot (no API
+// cost, so traffic is free). The user's full posts/chart/first/last already live
+// in that snapshot. Only falls back to a live API scan if explicitly enabled.
+async function scanHandle(handle) {
+	const clean = handle.replace(/^@+/, '').trim();
+	const key = clean.toLowerCase();
+	let lb = null;
+	try { lb = await getLeaderboard(); } catch (_) {}
+	if (lb && lb.users) {
+		const idx = lb.users.findIndex((u) => (u.h || '').toLowerCase() === key);
+		if (idx !== -1) return { user: lb.users[idx], rank: idx + 1, source: 'cache' };
+	}
+	// Not in the snapshot.
+	if (LIVE_PROFILE_SCAN) {
+		const user = await liveScanHandle(clean);
+		let rank = lb && lb.users ? lb.users.filter((u) => u.v > user.v).length + 1 : 1;
+		return { user, rank, source: 'live' };
+	}
+	// Cache-only mode: return an empty profile rather than spending an API call.
+	const empty = { h: clean, name: clean, avatar: '', followers: 0, verified: false, v: 0, l: 0, p: 0, atV: 0, kw: 0, varT: 0, rep: 0, chart: [], posts: [], first: null, last: null };
+	const rank = lb && lb.users ? lb.users.length + 1 : 1;
+	return { user: empty, rank, source: 'cache-miss' };
 }
 
 if (KEY) {
