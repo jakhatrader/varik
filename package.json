@@ -1,0 +1,13 @@
+{
+  "name": "proof-of-variational",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proof of VARIATIONAL — real X mention leaderboard powered by twitterapi.io",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
