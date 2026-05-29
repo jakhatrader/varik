@@ -357,8 +357,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	function esc(s){return encodeURIComponent(s);}
 	function escHTML(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 	// Variational gets its real X logo; everyone else uses unavatar (real avatar in live mode).
-	var AV_OVERRIDE={'variational_io':'https://unavatar.io/x/variational_io'};
-	function avatarHTML(h,u){var key=(h||'').toLowerCase();var init=(h||'?').charAt(0).toUpperCase();var src=u||AV_OVERRIDE[key]||('https://unavatar.io/twitter/'+esc(h)+'?fallback=false');return init+'<img src="'+src+'" alt="" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}
+	// Variational always uses its own bundled logo (so it can never break); everyone else uses their real X avatar.
+	var AV_OVERRIDE={'variational_io':'variational.svg'};
+	function avatarHTML(h,u){var key=(h||'').toLowerCase();var init=(h||'?').charAt(0).toUpperCase();var src=AV_OVERRIDE[key]||u||('https://unavatar.io/twitter/'+esc(h)+'?fallback=false');return init+'<img src="'+src+'" alt="" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}
 	var MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 	function dateLabel(ms){if(!ms)return '—';var d=new Date(ms);return MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
 
@@ -534,3 +535,12 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 </script>
 </body>
 </html>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" rx="0" fill="#0d1424"/>
+  <g fill="none" stroke="#4f8bff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <!-- big peak (left side of the A) -->
+    <path d="M70 300 C 70 300, 150 110, 200 110 C 245 110, 300 250, 320 300"/>
+    <!-- inner / second peak nested inside -->
+    <path d="M150 300 C 165 235, 205 165, 235 175 C 270 187, 300 255, 312 300"/>
+  </g>
+</svg>
