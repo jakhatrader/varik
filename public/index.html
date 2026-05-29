@@ -99,6 +99,13 @@ section{margin-top:46px;}
 .pov-share-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
 .pov-share-row .pov-btn{flex:1;min-width:180px;}
 
+.pov-posts{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+.pov-post{display:block;background:var(--surface);border:1px solid var(--border-soft);border-radius:14px;padding:14px 16px;color:var(--text);transition:border-color .15s ease,transform .12s ease,background .15s ease;}
+.pov-post:hover{text-decoration:none;border-color:rgba(79,210,255,0.4);background:rgba(120,160,255,0.05);transform:translateY(-1px);color:var(--text);}
+.pov-post-text{font-size:14.5px;line-height:1.5;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+.pov-post-meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--text-dim);}
+.pov-post-meta .vv{color:var(--var-cyan);}
+
 .pov-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .pov-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
 .pov-stat-label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);}
@@ -112,9 +119,10 @@ section{margin-top:46px;}
 .pov-search input::placeholder{color:var(--text-dim);}
 
 .pov-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.pov-board-scroll{max-height:660px;overflow-y:auto;}
 .pov-board{width:100%;border-collapse:collapse;}
 .pov-board th,.pov-board td{padding:13px 16px;text-align:left;font-size:14.5px;border-bottom:1px solid var(--border-soft);}
-.pov-board thead th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:800;background:rgba(120,160,255,0.04);}
+.pov-board thead th{position:sticky;top:0;z-index:2;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:800;background:#101a30;}
 .pov-board td.num,.pov-board th.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
 .pov-board tbody tr:last-child td{border-bottom:none;}
 .pov-board tbody tr{cursor:pointer;}
@@ -131,7 +139,7 @@ section{margin-top:46px;}
 tr.pov-new{animation:povRow 1.4s ease;}
 @keyframes povRow{0%{background:rgba(79,210,255,0.28);}100%{background:transparent;}}
 tr.pov-you td{background:rgba(79,210,255,0.08);}
-.pov-lb-foot{padding:13px 16px;font-size:13px;color:var(--text-dim);text-align:center;}
+.pov-lb-foot{padding:13px 16px;font-size:13px;color:var(--text-dim);text-align:center;border-top:1px solid var(--border-soft);}
 
 .pov-cta{text-align:center;background:linear-gradient(160deg,rgba(79,210,255,0.10),rgba(61,123,255,0.06));border:1px solid var(--border);border-radius:22px;padding:42px 24px;margin-top:56px;}
 .pov-cta h2{font-size:clamp(26px,4vw,38px);font-weight:900;}
@@ -174,7 +182,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 <body>
 
 <div class="pov-ref-banner">
-	<span>🚀 Trade on Omni with referral code <strong>OMNIMUAR</strong></span>
+	<span>🚀 Trade on Var with referral code <strong>OMNIMUAR</strong></span>
 	<span class="pov-boost">BONUS +15% POINTS BOOST</span>
 	<a class="pov-ref-link" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Claim it ↗</a>
 </div>
@@ -193,7 +201,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		</div>
 		<nav class="pov-nav">
 			<a class="pov-btn pov-btn-ghost" href="https://x.com/variational_io" target="_blank" rel="noopener">@variational_io</a>
-			<a class="pov-btn pov-btn-primary" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Launch Omni ↗</a>
+			<a class="pov-btn pov-btn-primary" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Launch Var ↗</a>
 		</nav>
 	</header>
 
@@ -258,7 +266,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-prof-stats">
 				<div class="pov-card-stat"><div class="k">Total views</div><div class="v" id="pViews">0</div></div>
 				<div class="pov-card-stat"><div class="k">Total likes</div><div class="v" id="pLikes">0</div></div>
-				<div class="pov-card-stat"><div class="k">Posts</div><div class="v" id="pPosts">0</div></div>
+				<div class="pov-card-stat"><div class="k">Total posts</div><div class="v" id="pPosts">0</div></div>
 			</div>
 			<div class="pov-prof-chart" id="pChart"></div>
 			<p class="notion-muted" id="pFirst" style="margin-top:10px"></p>
@@ -266,12 +274,14 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-breakdown">
 				<div class="pov-bd"><div class="pov-bd-k">🔗 <span class="pov-tag">@variational_io</span></div><div class="pov-bd-v" id="pAt">0</div><div class="pov-bd-c">posts mentioning the account</div></div>
 				<div class="pov-bd"><div class="pov-bd-k">📝 keyword “variational”</div><div class="pov-bd-v" id="pKw">0</div><div class="pov-bd-c">posts using the keyword</div></div>
-				<div class="pov-bd"><div class="pov-bd-k">💵 <span class="pov-tag">$VAR</span> cashtag</div><div class="pov-bd-v" id="pVar">0</div><div class="pov-bd-c">posts with the cashtag</div></div>
+				<div class="pov-bd"><div class="pov-bd-k">💵 <span class="pov-tag">$VAR</span> tag</div><div class="pov-bd-v" id="pVar">0</div><div class="pov-bd-c">posts with the $VAR tag</div></div>
 				<div class="pov-bd"><div class="pov-bd-k">💬 replies w/ commentary</div><div class="pov-bd-v" id="pReply">0</div><div class="pov-bd-c">substantive replies to @variational_io</div></div>
 			</div>
+			<h3 class="pov-prof-h3">Top posts</h3>
+			<div class="pov-posts" id="pPostsList"></div>
 			<div class="pov-share-row">
 				<a class="pov-btn pov-btn-primary" id="pShareX" href="#" target="_blank" rel="noopener">𝕏 Share this profile</a>
-				<a class="pov-btn pov-btn-ghost" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Trade on Omni (+15% boost)</a>
+				<a class="pov-btn pov-btn-ghost" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Trade on Var (+15% boost)</a>
 			</div>
 		</div>
 	</section>
@@ -280,6 +290,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		<div class="pov-stats">
 			<div class="pov-stat"><p class="pov-stat-label">Total views</p><p class="pov-stat-value" id="totalViews">0</p><p class="pov-stat-cap">All Variational-related views, summed across every indexed account.</p></div>
 			<div class="pov-stat"><p class="pov-stat-label">Total likes</p><p class="pov-stat-value" id="totalLikes">0</p><p class="pov-stat-cap">All likes on Variational-related posts, summed across accounts.</p></div>
+			<div class="pov-stat"><p class="pov-stat-label">Total posts</p><p class="pov-stat-value" id="totalPosts">0</p><p class="pov-stat-cap">Total Variational-related posts across all indexed accounts.</p></div>
+		</div>
+		<div class="pov-stats" style="margin-top:16px">
 			<div class="pov-stat"><p class="pov-stat-label">Indexed users</p><p class="pov-stat-value" id="totalUsers">0</p><p class="pov-stat-cap">How many accounts appear in the indexed sample.</p></div>
 		</div>
 	</section>
@@ -289,7 +302,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div>📊</div>
 			<div>
 				<strong>What gets counted</strong>
-				<p>Original posts, quote tweets, <em>and replies with commentary</em> that contain a mention of <span class="pov-tag">@variational_io</span>, the keyword <strong>“variational”</strong>, or the <span class="pov-tag">$VAR</span> cashtag. Plain retweets and empty replies are excluded.</p>
+				<p>Original posts, quote tweets, <em>and replies with commentary</em> that contain a mention of <span class="pov-tag">@variational_io</span>, the keyword <strong>“variational”</strong>, or the <span class="pov-tag">$VAR</span> tag. Plain retweets and empty replies are excluded.</p>
 			</div>
 		</div>
 	</section>
@@ -303,25 +316,27 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-search"><input id="search" type="text" placeholder="Search a handle…" autocomplete="off" spellcheck="false" /></div>
 		</div>
 		<div class="pov-table-wrap">
-			<table class="pov-board">
-				<thead><tr><th class="pov-rk">#</th><th>User</th><th class="num">Views</th><th class="num">Likes</th><th class="num">Posts</th></tr></thead>
-				<tbody id="board"></tbody>
-			</table>
+			<div class="pov-board-scroll">
+				<table class="pov-board">
+					<thead><tr><th class="pov-rk">#</th><th>User</th><th class="num">Views</th><th class="num">Likes</th><th class="num">Posts</th></tr></thead>
+					<tbody id="board"></tbody>
+				</table>
+			</div>
 			<div class="pov-lb-foot" id="lbFoot">Loading…</div>
 		</div>
 	</section>
 
 	<section class="pov-cta">
-		<h2>Start farming on Omni</h2>
+		<h2>Start farming on Var</h2>
 		<p>Trade perps on 500+ markets with zero fees and up to 50x leverage. Sign up with the referral code below to lock in your bonus.</p>
 		<div class="pov-code">CODE: OMNIMUAR <span class="pov-boost-pill">+15% POINTS BOOST</span></div>
-		<div><a class="pov-btn pov-btn-primary" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener" style="padding:13px 28px;font-size:16px;">Trade on Omni with +15% boost ↗</a></div>
+		<div><a class="pov-btn pov-btn-primary" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener" style="padding:13px 28px;font-size:16px;">Trade on Var with +15% boost ↗</a></div>
 	</section>
 
 	<section class="pov-section">
 		<h2 class="pov-h2">About Variational</h2>
 		<div class="pov-feat">
-			<div class="pov-fcard"><div class="pov-fic">⚡</div><h3>Zero-fee perps</h3><p>Omni offers up to 50x leverage with zero trading fees, loss refunds, and rewards that flow back to traders.</p></div>
+			<div class="pov-fcard"><div class="pov-fic">⚡</div><h3>Zero-fee perps</h3><p>Var offers up to 50x leverage with zero trading fees, loss refunds, and rewards that flow back to traders.</p></div>
 			<div class="pov-fcard"><div class="pov-fic">🔗</div><h3>RFQ, not order books</h3><p>A peer-to-peer Request-for-Quote model aggregates the deepest liquidity from CEXs, DEXs and OTC.</p></div>
 			<div class="pov-fcard"><div class="pov-fic">🔒</div><h3>Settled on-chain</h3><p>Trades clear and settle on Arbitrum in isolated escrow smart contracts. $200B+ volume processed.</p></div>
 		</div>
@@ -340,19 +355,27 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	function seed(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0);}
 	function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 	function esc(s){return encodeURIComponent(s);}
-	function avatarHTML(h,u){var init=(h||'?').charAt(0).toUpperCase();var src=u||('https://unavatar.io/twitter/'+esc(h)+'?fallback=false');return init+'<img src="'+src+'" alt="" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}
+	function escHTML(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+	// Variational gets its real X logo; everyone else uses unavatar (real avatar in live mode).
+	var AV_OVERRIDE={'variational_io':'https://unavatar.io/x/variational_io'};
+	function avatarHTML(h,u){var key=(h||'').toLowerCase();var init=(h||'?').charAt(0).toUpperCase();var src=u||AV_OVERRIDE[key]||('https://unavatar.io/twitter/'+esc(h)+'?fallback=false');return init+'<img src="'+src+'" alt="" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">';}
 	var MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+	function dateLabel(ms){if(!ms)return '—';var d=new Date(ms);return MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
 
-	var REAL=false, UPD_HOURS=24;
-	var baseUsers=0, baseViews=0, baseLikes=0;
+	var REAL=false, UPD_HOURS=24, WIN='all time';
+	var baseUsers=0, baseViews=0, baseLikes=0, basePosts=0;
 	var board=[];
 	var youHandle=null, filter='', lastShown=null;
 
 	/* ---------- demo fallback data (used only if backend unavailable) ---------- */
 	var demoNames=['variational_io','JoestarCrypto','WisdomMatic','rishabhsrishi','airdrops_io','DefiLlama','HyperliquidX','GMX_IO','dYdX','pendle_fi','arbitrum','CryptoKaleo','inversebrah','0xMert_','AltcoinGordon','Ashcryptoreal','TheCryptoLark','IamNomad','Cobie','Pentosh1','CryptoCred','DonAlt','HsakaTrades','Tradermayne','ByzGeneral','JackNiewold','smitssjors','CryptoGodJohn','TheFlowHorse','CryptoDiffer','Route2FI','thedefiedge','DefiIgnas','0xfoobar','milesdeutscher','AltcoinSherpa','CryptoMichNL','Crypto_Ed_NL','Daancrypto','SmallCapScience'];
 	var verifiedSet={'variational_io':1,'defillama':1,'hyperliquidx':1,'gmx_io':1,'dydx':1,'pendle_fi':1,'arbitrum':1,'airdrops_io':1};
-	function statsFor(handle){var s=seed(handle.toLowerCase());var v=4000+(s%2400000);var l=Math.floor(v*(0.004+((s>>5)%70)/10000));var atV=1+(s%70);var kw=1+((s>>3)%90);var varT=(s>>7)%40;var rep=(s>>11)%110;var p=atV+kw+varT+rep;var foll=400+(s%320000);var daysAgo=80+(s%420);return {h:handle,name:handle,verified:!!verifiedSet[handle.toLowerCase()],v:v,l:l,p:p,atV:atV,kw:kw,varT:varT,rep:rep,followers:foll,first:Date.now()-daysAgo*86400000};}
-	function loadDemo(){var topViews=[46100000,9200000,5400000,3900000,3100000,2600000];board=demoNames.map(function(n,i){var st=statsFor(n);if(i<topViews.length){st.v=topViews[i];st.l=Math.floor(st.v*0.0072);st.p=Math.max(st.p,120-i*8);}return st;});baseUsers=2147;baseViews=412000000;baseLikes=3180000;REAL=false;setBadge(false);}
+	var demoTexts=['Just opened a position on @variational_io — zero fees and the RFQ fills are insane 🔥','Why $VAR is one of the most underrated perp dex plays right now 🧵','variational keeps shipping. Loss refunds + up to 50x is a game changer.','GM. Farming points on Var today, the boost stacks up fast 📈','Deep dive on @variational_io and the Var architecture 👇','The $VAR community allocation is one of the fairest I’ve seen.','Tried variational on Arbitrum, settlement is genuinely on-chain. Bullish.'];
+	function statsFor(handle){var s=seed(handle.toLowerCase());var v=4000+(s%2400000);var l=Math.floor(v*(0.004+((s>>5)%70)/10000));var atV=1+(s%70);var kw=1+((s>>3)%90);var varT=(s>>7)%40;var rep=(s>>11)%110;var p=atV+kw+varT+rep;var foll=400+(s%320000);var daysAgo=80+(s%420);var lastAgo=(s>>9)%70;var first=Date.now()-daysAgo*86400000;var last=Date.now()-lastAgo*86400000;
+		var r=rng(s);var posts=[];var np=Math.min(8,3+Math.floor(r()*6));for(var i=0;i<np;i++){var pv=Math.floor(v/(np)* (0.4+r()*1.6));posts.push({text:demoTexts[Math.floor(r()*demoTexts.length)],v:pv,l:Math.floor(pv*0.01),date:new Date(first+r()*(last-first)).toISOString(),url:'https://x.com/'+handle});}
+		posts.sort(function(a,b){return b.v-a.v;});
+		return {h:handle,name:handle,verified:!!verifiedSet[handle.toLowerCase()],v:v,l:l,p:p,atV:atV,kw:kw,varT:varT,rep:rep,followers:foll,first:first,last:last,posts:posts};}
+	function loadDemo(){var topViews=[46100000,9200000,5400000,3900000,3100000,2600000];board=demoNames.map(function(n,i){var st=statsFor(n);if(i<topViews.length){st.v=topViews[i];st.l=Math.floor(st.v*0.0072);st.p=Math.max(st.p,120-i*8);}return st;});baseUsers=2147;baseViews=412000000;baseLikes=3180000;basePosts=18400;REAL=false;WIN='all time';setBadge(false);}
 
 	function setUpdNote(real,generatedAt,nextAt){
 		var el=document.getElementById('updText');if(!el)return;var every=(UPD_HOURS===24?'24 hours':(UPD_HOURS+' hours'));
@@ -363,15 +386,14 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 
 	/* ---------- totals + rendering ---------- */
 	function extra(){return board.filter(function(u){return u._extra;});}
-	function totals(){var tv=baseViews,tl=baseLikes;extra().forEach(function(u){tv+=u.v;tl+=u.l;});return {tv:tv,tl:tl,tu:baseUsers+extra().length};}
-	function renderTotals(){var t=totals();document.getElementById('totalViews').textContent=compact(t.tv);document.getElementById('totalLikes').textContent=compact(t.tl);document.getElementById('totalUsers').textContent=fmt(t.tu);}
+	function totals(){var tv=baseViews,tl=baseLikes,tp=basePosts;extra().forEach(function(u){tv+=u.v;tl+=u.l;tp+=u.p;});return {tv:tv,tl:tl,tp:tp,tu:baseUsers+extra().length};}
+	function renderTotals(){var t=totals();document.getElementById('totalViews').textContent=compact(t.tv);document.getElementById('totalLikes').textContent=compact(t.tl);document.getElementById('totalPosts').textContent=compact(t.tp);document.getElementById('totalUsers').textContent=fmt(t.tu);}
 
 	function renderBoard(){
 		board.sort(function(a,b){return b.v-a.v;});
 		var tbody=document.getElementById('board');tbody.innerHTML='';var shown=0;
 		board.forEach(function(u,idx){
-			if(filter&&u.h.toLowerCase().indexOf(filter)===-1)return;
-			if(!filter&&shown>=50)return;shown++;
+			if(filter&&u.h.toLowerCase().indexOf(filter)===-1)return;shown++;
 			var rank=idx+1;var tr=document.createElement('tr');
 			if(u._new)tr.className='pov-new';
 			if(youHandle&&u.h.toLowerCase()===youHandle)tr.className+=' pov-you';
@@ -386,7 +408,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			tbody.appendChild(tr);u._new=false;
 		});
 		var t=totals();
-		document.getElementById('lbFoot').textContent=filter?('Showing '+shown+' matching account'+(shown===1?'':'s')):('Showing top '+shown+' of '+fmt(t.tu)+' indexed accounts');
+		document.getElementById('lbFoot').textContent=filter?('Showing '+shown+' matching account'+(shown===1?'':'s')):('Showing all '+shown+' indexed accounts · scroll for more');
 	}
 
 	/* ---------- chart ---------- */
@@ -420,7 +442,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		document.getElementById('cLikes').textContent=compact(u.l);
 		document.getElementById('cPosts').textContent=fmt(u.p);
 		document.getElementById('cChart').innerHTML=chartFor(u);
-		if(u.first){var fd=new Date(u.first);document.getElementById('cFirst').textContent='FIRST POST · '+MONTHS[fd.getMonth()]+' '+fd.getDate()+', '+fd.getFullYear();}else{document.getElementById('cFirst').textContent='FIRST POST · —';}
+		document.getElementById('cFirst').textContent='FIRST POST · '+dateLabel(u.first);
 		var txt='I\u2019ve generated '+compact(u.v)+' views helping @variational_io grow on X 📈\n\nRank #'+rank+' on Proof of VARIATIONAL. Check yours 👇';
 		document.getElementById('shareX').href='https://twitter.com/intent/tweet?text='+esc(txt)+'&url='+esc('https://omni.variational.io/?ref=OMNIMUAR');
 		var r=document.getElementById('result');r.classList.remove('show');void r.offsetWidth;r.classList.add('show');
@@ -444,6 +466,12 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 
 	/* ---------- profile view (per-user page) ---------- */
 	function findUser(h){h=h.toLowerCase();return board.find(function(x){return x.h.toLowerCase()===h;});}
+	function renderPosts(u){
+		var box=document.getElementById('pPostsList');
+		var posts=(u.posts||[]).slice().sort(function(a,b){return (b.v||0)-(a.v||0);});
+		if(!posts.length){box.innerHTML='<p class="notion-muted">No individual posts found for this account in the current sample. Post-level data appears here once the account is indexed from live X data.</p>';return;}
+		box.innerHTML=posts.map(function(pp){var link=pp.url||('https://x.com/'+u.h+'/status/'+(pp.id||''));return '<a class="pov-post" href="'+link+'" target="_blank" rel="noopener">'+'<div class="pov-post-text">'+escHTML(pp.text||'(no text)')+'</div>'+'<div class="pov-post-meta"><span class="vv">👁 '+compact(pp.v||0)+' views</span><span>❤ '+compact(pp.l||0)+'</span>'+(pp.rp?('<span>💬 '+compact(pp.rp)+'</span>'):'')+'<span>'+(pp.date?dateLabel(Date.parse(pp.date)):'')+'</span></div></a>';}).join('');
+	}
 	function renderProfile(u,rank){
 		document.getElementById('pAvatar').innerHTML=avatarHTML(u.h,u.avatar);
 		document.getElementById('pName').textContent=u.name||u.h;
@@ -454,11 +482,13 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		document.getElementById('pLikes').textContent=compact(u.l);
 		document.getElementById('pPosts').textContent=fmt(u.p);
 		document.getElementById('pChart').innerHTML=chartFor(u);
-		if(u.first){var fd=new Date(u.first);document.getElementById('pFirst').textContent='First Variational post: '+MONTHS[fd.getMonth()]+' '+fd.getDate()+', '+fd.getFullYear();}else{document.getElementById('pFirst').textContent='';}
+		var fl='';if(u.first)fl='First post: '+dateLabel(u.first);if(u.last)fl+=(fl?'  ·  ':'')+'Last post: '+dateLabel(u.last);
+		document.getElementById('pFirst').textContent=fl;
 		document.getElementById('pAt').textContent=fmt(u.atV);
 		document.getElementById('pKw').textContent=fmt(u.kw);
 		document.getElementById('pVar').textContent=fmt(u.varT);
 		document.getElementById('pReply').textContent=fmt(u.rep);
+		renderPosts(u);
 		var txt='@'+u.h+' has generated '+compact(u.v)+' views helping @variational_io grow on X 📈\n\nRank #'+rank+' on Proof of VARIATIONAL 👇';
 		document.getElementById('pShareX').href='https://twitter.com/intent/tweet?text='+esc(txt)+'&url='+esc('https://omni.variational.io/?ref=OMNIMUAR');
 	}
@@ -469,6 +499,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		if(u){var sorted=board.slice().sort(function(a,b){return b.v-a.v;});renderProfile(u,sorted.indexOf(u)+1);return;}
 		document.getElementById('pName').textContent='Loading @'+handle+'\u2026';
 		document.getElementById('pAvatar').innerHTML=avatarHTML(handle,'');
+		document.getElementById('pPostsList').innerHTML='<p class="notion-muted">Loading posts…</p>';
 		if(REAL){fetch('api/user?handle='+esc(handle)).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){var uu=d.user;uu.h=uu.h||handle;renderProfile(uu,d.rank);}).catch(function(){var pu=statsFor(handle);renderProfile(pu,mergeRank(pu));});}
 		else{var pu=statsFor(handle);renderProfile(pu,mergeRank(pu));}
 	}
@@ -489,13 +520,14 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	function init(){
 		fetch('api/leaderboard').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){
 			board=(d.users||[]).map(function(u){u._extra=false;return u;});
-			baseViews=d.totals.views;baseLikes=d.totals.likes;baseUsers=d.totals.users;REAL=true;
+			baseViews=d.totals.views;baseLikes=d.totals.likes;baseUsers=d.totals.users;basePosts=d.totals.posts||0;REAL=true;
 			var w=d.window||{};if(d.updateIntervalHours)UPD_HOURS=d.updateIntervalHours;
-			setBadge(true,'last '+(w.lookbackDays||7)+'d · '+(w.sampledTweets||0)+' posts sampled');
+			WIN=(w.lookbackDays&&w.lookbackDays>0)?('last '+w.lookbackDays+' days'):'all time';
+			setBadge(true,WIN+' · '+(w.sampledTweets||0)+' posts sampled');
 			setUpdNote(true,d.generatedAt,d.nextUpdateAt);
-			document.getElementById('lbSub').textContent='Ranked by real Variational-related views on X (last '+(w.lookbackDays||7)+' days). Updated once every '+UPD_HOURS+' hours · click anyone to open their profile.';
+			document.getElementById('lbSub').textContent='Ranked by real Variational-related views on X ('+WIN+'). Updated once every '+UPD_HOURS+' hours · click anyone to open their profile.';
 			renderTotals();renderBoard();route();
-		}).catch(function(){loadDemo();setUpdNote(false);renderTotals();renderBoard();route();});
+		}).catch(function(){loadDemo();setUpdNote(false);document.getElementById('lbSub').textContent='Ranked by total Variational-related views on X (all time). Click anyone to open their profile.';renderTotals();renderBoard();route();});
 	}
 	init();
 })();
