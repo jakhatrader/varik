@@ -20,7 +20,9 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 const KEY = process.env.TWITTERAPI_KEY || '';
 // 0 (default) = ALL TIME (no date limit). Set a positive number to limit to the last N days.
 const LOOKBACK_DAYS = parseInt(process.env.LOOKBACK_DAYS || '0', 10);
-const LEADERBOARD_PAGES = parseInt(process.env.LEADERBOARD_PAGES || '20', 10); // ~20 tweets/page
+// High default so we walk the WHOLE history of Variational mentions (each page ~20 tweets).
+// Pagination stops automatically once X has no more results, so this is just a safety cap.
+const LEADERBOARD_PAGES = parseInt(process.env.LEADERBOARD_PAGES || '400', 10);
 const SCAN_PAGES = parseInt(process.env.SCAN_PAGES || '8', 10);
 const UPDATE_INTERVAL_HOURS = parseFloat(process.env.UPDATE_INTERVAL_HOURS || '24');
 const CACHE_TTL_MS = Math.max(1, UPDATE_INTERVAL_HOURS) * 60 * 60 * 1000;
@@ -183,23 +185,35 @@ async function buildLeaderboard() {
 	};
 }
 
-async function getLeaderboard() {
-	if (cache.data && Date.now() - cache.at < CACHE_TTL_MS) return stamp(cache.data, cache.at);
+// Build (or rebuild) the snapshot. Only one build runs at a time.
+function kickBuild() {
 	if (cache.building) return cache.building;
+	console.log('[build] starting full-history scan (cap ' + LEADERBOARD_PAGES + ' pages)...');
 	cache.building = buildLeaderboard()
 		.then((data) => {
 			const at = Date.now();
 			cache = { at, data, building: null };
 			try { fs.writeFileSync(CACHE_FILE, JSON.stringify({ at, data })); } catch (e) { console.warn('[cache] write failed:', e.message); }
-			console.log('[cache] refreshed at ' + new Date(at).toISOString());
+			console.log('[cache] refreshed at ' + new Date(at).toISOString() + ' — ' + data.totals.posts + ' posts, ' + data.totals.users + ' users, ' + data.totals.views + ' views');
 			return stamp(data, at);
 		})
 		.catch((e) => {
 			cache.building = null;
+			console.error('[build] failed:', e.message);
 			if (cache.data) return stamp(cache.data, cache.at);
 			throw e;
 		});
 	return cache.building;
+}
+
+// Serve-stale-while-revalidate (proofofhype-style): visitors always get an
+// instant snapshot; when it's older than the 24h window we refresh in the
+// background so nobody waits for the long full-history scan.
+async function getLeaderboard() {
+	const fresh = cache.data && Date.now() - cache.at < CACHE_TTL_MS;
+	if (fresh) return stamp(cache.data, cache.at);
+	if (cache.data) { kickBuild(); return stamp(cache.data, cache.at); }
+	return kickBuild();
 }
 
 async function scanHandle(handle) {
