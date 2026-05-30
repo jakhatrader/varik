@@ -139,6 +139,9 @@ function sinceFloorClause() {
 
 /* ---------------- persistent index ---------------- */
 let store = { tweets: {}, oldestCursor: '', backfillDone: false, newestTime: 0, count: 0, updatedAt: 0 };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let storeLoaded = false;   // true once existing data is read OK (or confirmed genuinely empty)
+let redisHadData = false;  // true if Redis holds an index blob we must NOT overwrite
 
 /* ---- Redis REST helpers ---- */
 async function redisCmd(args) {
@@ -162,17 +165,45 @@ async function redisSaveBlob(str) {
 	await redisCmd(['SET', REDIS_KEY + ':meta', String(n)]);
 }
 
-async function redisLoadBlob() {
-	const meta = await redisCmd(['GET', REDIS_KEY + ':meta']);
+async function redisGetRetry(key, tries = 5) {
+	let lastErr = null;
+	for (let t = 0; t < tries; t++) {
+		try { return await redisCmd(['GET', key]); }
+		catch (e) { lastErr = e; await sleep(300 * (t + 1)); }
+	}
+	throw lastErr || new Error('redis GET failed: ' + key);
+}
+
+async function redisLoadBlobOnce() {
+	const meta = await redisGetRetry(REDIS_KEY + ':meta');
 	const n = parseInt(meta, 10);
-	if (!(n > 0)) return null;
+	if (!(n > 0)) return { empty: true, str: null };
+	redisHadData = true; // a blob exists — protect it from being overwritten until we read it
 	let gz = '';
 	for (let i = 0; i < n; i++) {
-		const part = await redisCmd(['GET', REDIS_KEY + ':' + i]);
-		if (part == null) return null;
+		const part = await redisGetRetry(REDIS_KEY + ':' + i);
+		if (part == null) throw new Error('missing chunk ' + i + '/' + n);
 		gz += part;
 	}
-	return zlib.gunzipSync(Buffer.from(gz, 'base64')).toString('utf8');
+	// gunzip can throw "incorrect data check" on a flaky/truncated REST read; caller retries
+	const str = zlib.gunzipSync(Buffer.from(gz, 'base64')).toString('utf8');
+	return { empty: false, str };
+}
+
+async function redisLoadBlob() {
+	let lastErr = null;
+	for (let attempt = 0; attempt < 8; attempt++) {
+		try {
+			const res = await redisLoadBlobOnce();
+			if (res.empty) return null; // nothing stored under this key
+			return res.str;             // clean read
+		} catch (e) {
+			lastErr = e;
+			console.warn('[store] load attempt ' + (attempt + 1) + '/8 failed: ' + e.message + ' — retrying');
+			await sleep(600 * (attempt + 1));
+		}
+	}
+	throw lastErr || new Error('redis load failed after retries');
 }
 
 async function loadStore() {
@@ -185,15 +216,28 @@ async function loadStore() {
 			if (saved && saved.tweets) {
 				store = Object.assign(store, saved);
 				store.count = Object.keys(store.tweets).length;
+				storeLoaded = true;
 				console.log('[store] restored ' + store.count + ' tweets (backfill ' + (store.backfillDone ? 'complete' : 'in progress') + ')');
-			}
+			} else { storeLoaded = true; }
+		} else if (!redisHadData) {
+			storeLoaded = true; // no blob exists at all — safe to start a fresh index
 		}
-	} catch (e) { console.warn('[store] load failed:', e.message); }
+	} catch (e) {
+		// Left storeLoaded = false on purpose: Redis has data we couldn't read, so
+		// saveStore() will refuse to overwrite it. A restart will retry the read.
+		console.warn('[store] load failed after retries:', e.message, '— existing index is PROTECTED, will retry on next restart');
+	}
 }
 
 let saveTimer = null, savePending = false;
 function saveStore() {
 	store.count = Object.keys(store.tweets).length;
+	// SAFETY: if Redis holds an index we failed to read, never overwrite it with
+	// this (possibly empty/partial) in-memory store. Protects the existing data.
+	if (USE_REDIS && redisHadData && !storeLoaded) {
+		console.warn('[store] save SKIPPED: existing Redis index not loaded yet — refusing to overwrite it');
+		return;
+	}
 	store.updatedAt = Date.now();
 	if (saveTimer) { savePending = true; return; } // debounce / coalesce
 	saveTimer = setTimeout(async () => {
