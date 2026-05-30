@@ -194,12 +194,6 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 </style></head>
 <body>
 
-<div class="pov-ref-banner">
-	<span>🚀 Trade on Var with referral code <strong>OMNIMUAR</strong></span>
-	<span class="pov-boost">BONUS +15% POINTS BOOST</span>
-	<a class="pov-ref-link" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Claim it ↗</a>
-</div>
-
 <main class="notion-shell">
 
 	<header class="pov-topbar">
@@ -209,7 +203,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		</div>
 		<nav class="pov-nav">
 			<a class="pov-btn pov-btn-ghost" href="https://x.com/muarmemuar" target="_blank" rel="noopener">@muarmemuar</a>
-			<a class="pov-btn pov-btn-primary" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Launch Var ↗</a>
+			<a class="pov-btn pov-btn-primary" href="https://x.com/variational_io" target="_blank" rel="noopener">@variational_io</a>
 		</nav>
 	</header>
 
@@ -289,7 +283,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-posts" id="pPostsList"></div>
 			<div class="pov-share-row">
 				<a class="pov-btn pov-btn-primary" id="pShareX" href="#" target="_blank" rel="noopener">𝕏 Share this profile</a>
-				<a class="pov-btn pov-btn-ghost" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Trade on Var (+15% boost)</a>
+				<a class="pov-btn pov-btn-ghost" href="https://x.com/variational_io" target="_blank" rel="noopener">@variational_io</a>
 			</div>
 		</div>
 	</section>
@@ -335,10 +329,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	</section>
 
 	<section class="pov-cta">
-		<h2>Start Trading on Var</h2>
-		<p>Trade perps on 500+ markets with zero fees and up to 50x leverage. Sign up with the referral code below to lock in your bonus.</p>
-		<div class="pov-code">CODE: OMNIMUAR <span class="pov-boost-pill">+15% POINTS BOOST</span></div>
-		<div><a class="pov-btn pov-btn-primary" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener" style="padding:13px 28px;font-size:16px;">Trade on Var with +15% boost ↗</a></div>
+		<h2>About the Variational referral</h2>
+		<p>Proof of VARIATIONAL is an unofficial community tracker and is not affiliated with Variational. If you choose to trade on Variational, the optional referral code below applies a +15% points boost.</p>
+		<div class="pov-code">Optional code: OMNIMUAR <span class="pov-boost-pill">+15% POINTS BOOST</span></div>
 	</section>
 
 	<section class="pov-section">
@@ -351,7 +344,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	</section>
 
 	<footer class="pov-footer">
-		<p id="footNote">Proof of VARIATIONAL is an independent community project. It is not affiliated with Variational or X, does not handle funds, and is not financial advice. Referral code <strong>OMNIMUAR</strong> applies a +15% points boost on <a href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">omni.variational.io</a>.</p>
+		<p id="footNote">Proof of VARIATIONAL is an independent community project. It is not affiliated with Variational or X, does not handle funds, and is not financial advice. Referral code <strong>OMNIMUAR</strong> applies a +15% points boost on omni.variational.io.</p>
 	</footer>
 
 </main>
@@ -480,7 +473,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		document.getElementById('cChart').innerHTML=chartFor(u);
 		document.getElementById('cFirst').textContent='FIRST POST · '+dateLabel(u.first);
 		var txt='I\u2019ve generated '+compact(u.v)+' views helping @variational_io grow on X 📈\n\nRank #'+rank+' on Proof of VARIATIONAL. Check yours 👇';
-		document.getElementById('shareX').href='https://twitter.com/intent/tweet?text='+esc(txt)+'&url='+esc('https://omni.variational.io/?ref=OMNIMUAR');
+		document.getElementById('shareX').href='https://twitter.com/intent/tweet?text='+esc(txt)+'&url='+esc('https://ogvar.xyz');
 		var r=document.getElementById('result');r.classList.remove('show');void r.offsetWidth;r.classList.add('show');
 	}
 	function mergeRank(u){board.sort(function(a,b){return b.v-a.v;});return board.filter(function(x){return x.v>u.v;}).length+1;}
@@ -526,7 +519,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		document.getElementById('pReply').textContent=fmt(u.rep);
 		renderPosts(u);
 		var txt='@'+u.h+' has generated '+compact(u.v)+' views helping @variational_io grow on X 📈\n\nRank #'+rank+' on Proof of VARIATIONAL 👇';
-		document.getElementById('pShareX').href='https://twitter.com/intent/tweet?text='+esc(txt)+'&url='+esc('https://omni.variational.io/?ref=OMNIMUAR');
+		document.getElementById('pShareX').href='https://twitter.com/intent/tweet?text='+esc(txt)+'&url='+esc('https://ogvar.xyz');
 	}
 	function openProfile(handle){
 		handle=String(handle).replace(/^@+/,'');
