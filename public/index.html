@@ -191,6 +191,16 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	.pov-breakdown,.pov-prof-stats{grid-template-columns:1fr;}
 	.pov-hero{padding-top:28px;}
 }
+.pov-sort{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+.pov-sort-lbl{font-size:13px;color:var(--text-dim);font-weight:700;margin-right:2px;}
+.pov-sort-btn{background:rgba(120,160,255,0.08);border:1px solid var(--border);color:var(--text-soft);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s ease;}
+.pov-sort-btn:hover{background:rgba(120,160,255,0.16);color:var(--text);}
+.pov-sort-btn.active{background:var(--grad);color:#04122e;border-color:transparent;}
+.pov-prof-ranks{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px;}
+.pov-code-link{color:var(--var-cyan);text-decoration:underline;text-underline-offset:3px;}
+.pov-code-link:hover{color:#fff;}
+.pov-board th.active-col{color:var(--var-cyan);}
+.pov-board td.active-col{color:var(--var-cyan);font-weight:800;}
 </style></head>
 <body>
 
@@ -250,6 +260,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-share-row">
 				<a class="pov-btn pov-btn-primary" id="shareX" href="#" target="_blank" rel="noopener">𝕏 Share on X</a>
 				<button class="pov-btn pov-btn-ghost" id="openProfileBtn" type="button">View full profile →</button>
+				<button class="pov-btn pov-btn-ghost" id="downloadCardBtn" type="button">⬇ Download PNG</button>
 			</div>
 		</div>
 	</section>
@@ -262,7 +273,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 				<div class="pov-prof-id">
 					<h1 id="pName">handle</h1>
 					<div class="pov-prof-handle"><a id="pXlink" href="#" target="_blank" rel="noopener">@handle</a> · <span id="pFollowers">0 followers</span></div>
-					<span class="pov-prof-rank" id="pRank">Rank #—</span>
+					<div class="pov-prof-ranks" id="pRanks"><span class="pov-prof-rank" id="pRankV">👁 Views #—</span><span class="pov-prof-rank" id="pRankL">❤ Likes #—</span><span class="pov-prof-rank" id="pRankP">📝 Posts #—</span></div>
 				</div>
 			</div>
 			<div class="pov-prof-stats">
@@ -283,6 +294,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-posts" id="pPostsList"></div>
 			<div class="pov-share-row">
 				<a class="pov-btn pov-btn-primary" id="pShareX" href="#" target="_blank" rel="noopener">𝕏 Share this profile</a>
+				<button class="pov-btn pov-btn-ghost" id="downloadProfileBtn" type="button">⬇ Download PNG</button>
 				<a class="pov-btn pov-btn-ghost" href="https://x.com/variational_io" target="_blank" rel="noopener">@variational_io</a>
 			</div>
 		</div>
@@ -317,10 +329,16 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			</div>
 			<div class="pov-search"><input id="search" type="text" placeholder="Search a handle…" autocomplete="off" spellcheck="false" /></div>
 		</div>
+		<div class="pov-sort" id="sortControls">
+			<span class="pov-sort-lbl">Rank by</span>
+			<button type="button" class="pov-sort-btn active" data-k="v">👁 Views</button>
+			<button type="button" class="pov-sort-btn" data-k="l">❤ Likes</button>
+			<button type="button" class="pov-sort-btn" data-k="p">📝 Posts</button>
+		</div>
 		<div class="pov-table-wrap">
 			<div class="pov-board-scroll">
 				<table class="pov-board">
-					<thead><tr><th class="pov-rk">#</th><th>User</th><th class="num">Views</th><th class="num">Likes</th><th class="num">Posts</th></tr></thead>
+					<thead><tr><th class="pov-rk">#</th><th>User</th><th class="num" data-col="v">Views</th><th class="num" data-col="l">Likes</th><th class="num" data-col="p">Posts</th></tr></thead>
 					<tbody id="board"></tbody>
 				</table>
 			</div>
@@ -331,7 +349,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	<section class="pov-cta">
 		<h2>About the Variational referral</h2>
 		<p>Proof of VARIATIONAL is an unofficial community tracker and is not affiliated with Variational. If you choose to trade on Variational, the optional referral code below applies a +15% points boost.</p>
-		<div class="pov-code">Optional code: OMNIMUAR <span class="pov-boost-pill">+15% POINTS BOOST</span></div>
+		<div class="pov-code"><a class="pov-code-link" href="https://omni.variational.io/?ref=OMNIMUAR" target="_blank" rel="noopener">Optional code: OMNIMUAR</a> <span class="pov-boost-pill">+15% POINTS BOOST</span></div>
 	</section>
 
 	<section class="pov-section">
@@ -349,6 +367,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function(){
 	var fmt=function(n){return Math.round(n).toLocaleString('en-US');};
@@ -363,14 +382,14 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	// Upgrade Twitter avatar URLs to full resolution (X serves _normal=48px by default,
 	// which looks blurry in our larger circles). _400x400 is the crisp original size.
 	function hiRes(src){return String(src||'').replace(/_(normal|bigger|mini|x96|200x200|reasonably_small)(\.[a-z]+)(\?.*)?$/i,'_400x400$2$3');}
-	function avatarHTML(h,u){var key=(h||'').toLowerCase();var init=(h||'?').charAt(0).toUpperCase();var ovr=AV_OVERRIDE[key];var src=ovr||hiRes(u)||('https://unavatar.io/twitter/'+esc(h)+'?fallback=false');return init+'<img src="'+src+'" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display=\'none\'">';}
+	function avatarHTML(h,u){var key=(h||'').toLowerCase();var init=(h||'?').charAt(0).toUpperCase();var ovr=AV_OVERRIDE[key];var src=ovr||hiRes(u)||('https://unavatar.io/twitter/'+esc(h)+'?fallback=false');return init+'<img src="'+src+'" data-h="'+escHTML(h)+'" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.display=\'none\'">';}
 	var MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 	function dateLabel(ms){if(!ms)return '—';var d=new Date(ms);return MONTHS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
 
 	var REAL=false, UPD_HOURS=24, WIN='all time';
 	var baseUsers=0, baseViews=0, baseLikes=0, basePosts=0;
 	var board=[];
-	var youHandle=null, filter='', lastShown=null;
+	var youHandle=null, filter='', lastShown=null, sortKey='v';
 
 	/* ---------- demo fallback data (used only if backend unavailable) ---------- */
 	var demoNames=['variational_io','JoestarCrypto','WisdomMatic','rishabhsrishi','airdrops_io','DefiLlama','HyperliquidX','GMX_IO','dYdX','pendle_fi','arbitrum','CryptoKaleo','inversebrah','0xMert_','AltcoinGordon','Ashcryptoreal','TheCryptoLark','IamNomad','Cobie','Pentosh1','CryptoCred','DonAlt','HsakaTrades','Tradermayne','ByzGeneral','JackNiewold','smitssjors','CryptoGodJohn','TheFlowHorse','CryptoDiffer','Route2FI','thedefiedge','DefiIgnas','0xfoobar','milesdeutscher','AltcoinSherpa','CryptoMichNL','Crypto_Ed_NL','Daancrypto','SmallCapScience'];
@@ -395,7 +414,8 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	function renderTotals(){var t=totals();document.getElementById('totalViews').textContent=compact(t.tv);document.getElementById('totalLikes').textContent=compact(t.tl);document.getElementById('totalPosts').textContent=compact(t.tp);document.getElementById('totalUsers').textContent=fmt(t.tu);}
 
 	function renderBoard(){
-		board.sort(function(a,b){return b.v-a.v;});
+		board.sort(function(a,b){return (b[sortKey]||0)-(a[sortKey]||0);});
+		var _ths=document.querySelectorAll('.pov-board thead th[data-col]');for(var _i=0;_i<_ths.length;_i++){_ths[_i].classList.toggle('active-col',_ths[_i].getAttribute('data-col')===sortKey);}
 		var tbody=document.getElementById('board');tbody.innerHTML='';var shown=0;
 		board.forEach(function(u,idx){
 			if(filter&&u.h.toLowerCase().indexOf(filter)===-1)return;shown++;
@@ -406,9 +426,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			tr.innerHTML='<td class="pov-rk'+(rank<=3?' top':'')+'">'+medal+'</td>'+
 				'<td><div class="pov-user"><span class="pov-ua">'+avatarHTML(u.h,u.avatar)+'</span>'+
 				'<span class="pov-uh"><a href="#/u/'+u.h+'">@'+u.h+'</a>'+(u.verified?'<span class="pov-tick">\u2713</span>':'')+'</span><span class="pov-go">view →</span></div></td>'+
-				'<td class="num">'+fmt(u.v)+'</td>'+
-				'<td class="num">'+fmt(u.l)+'</td>'+
-				'<td class="num">'+fmt(u.p)+'</td>';
+				'<td class="num'+(sortKey==='v'?' active-col':'')+'">'+fmt(u.v)+'</td>'+
+				'<td class="num'+(sortKey==='l'?' active-col':'')+'">'+fmt(u.l)+'</td>'+
+				'<td class="num'+(sortKey==='p'?' active-col':'')+'">'+fmt(u.p)+'</td>';
 			tr.addEventListener('click',function(ev){if(ev.target.tagName==='A')return;location.hash='#/u/'+u.h;});
 			tbody.appendChild(tr);u._new=false;
 		});
@@ -506,7 +526,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		document.getElementById('pName').textContent=u.name||u.h;
 		var x=document.getElementById('pXlink');x.textContent='@'+u.h;x.href='https://x.com/'+u.h;
 		document.getElementById('pFollowers').textContent=compact(u.followers||0)+' followers';
-		document.getElementById('pRank').textContent='Rank #'+rank+' on Proof of VARIATIONAL';
+		var _rk=profileRanks(u);var _sr=function(id,em,lb,n){var el=document.getElementById(id);if(el)el.textContent=em+' '+lb+' #'+n;};_sr('pRankV','👁','Views',_rk.v);_sr('pRankL','❤','Likes',_rk.l);_sr('pRankP','📝','Posts',_rk.p);
 		document.getElementById('pViews').textContent=compact(u.v);
 		document.getElementById('pLikes').textContent=compact(u.l);
 		document.getElementById('pPosts').textContent=fmt(u.p);
@@ -537,6 +557,13 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	function currentHandle(){var m=location.hash.match(/^#\/u\/(.+)$/);if(m)return decodeURIComponent(m[1]);var pm=location.pathname.match(/^\/u\/([^\/?#]+)/);if(pm)return decodeURIComponent(pm[1]);return null;}
 	function route(){var h=currentHandle();if(h)openProfile(h);else closeProfile();}
 
+	/* ---------- ranks across views / likes / posts ---------- */
+	function profileRanks(u){function rk(key){var val=u[key]||0;return board.filter(function(x){return (x[key]||0)>val;}).length+1;}return {v:rk('v'),l:rk('l'),p:rk('p')};}
+	/* ---------- export as PNG with avatars baked in ---------- */
+	function blobToDataURL(blob){return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(blob);});}
+	function inlineAvatars(node){var imgs=[].slice.call(node.querySelectorAll('img'));return Promise.all(imgs.map(function(img){var src=img.getAttribute('src')||'';if(src.indexOf('data:')===0)return Promise.resolve();var h=img.getAttribute('data-h')||'';var tries=[];if(src)tries.push(src);if(h)tries.push('https://unavatar.io/twitter/'+encodeURIComponent(h));var i=0;function next(){if(i>=tries.length){img.style.display='none';return Promise.resolve();}var url=tries[i++];return fetch(url,{mode:'cors',cache:'force-cache'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(blobToDataURL).then(function(d){img.setAttribute('src',d);img.style.display='';}).catch(next);}return next();}));}
+	function downloadPNG(node,filename,btn){if(!node)return;if(typeof html2canvas==='undefined'){alert('Image export is still loading — check your connection and try again.');return;}var old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Rendering…';}inlineAvatars(node).then(function(){return html2canvas(node,{backgroundColor:'#070b16',scale:2,useCORS:true,logging:false});}).then(function(canvas){var link=document.createElement('a');link.download=filename;link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();document.body.removeChild(link);}).catch(function(){alert('Could not generate the image. Please try again.');}).then(function(){if(btn){btn.disabled=false;btn.textContent=old;}});}
+
 	/* ---------- events ---------- */
 	document.getElementById('scanBtn').addEventListener('click',scan);
 	document.getElementById('handle').addEventListener('keydown',function(e){if(e.key==='Enter')scan();});
@@ -545,6 +572,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	document.getElementById('backBtn').addEventListener('click',function(){if(location.hash){location.hash='';}else{closeProfile();}});
 	document.getElementById('homeBrand').addEventListener('click',function(){if(location.hash)location.hash='';else closeProfile();});
 	window.addEventListener('hashchange',route);
+	var _dlc=document.getElementById('downloadCardBtn');if(_dlc)_dlc.addEventListener('click',function(){var h=lastShown?lastShown.h:'card';downloadPNG(document.getElementById('card'),'proof-of-variational-'+h+'.png',_dlc);});
+	var _dlp=document.getElementById('downloadProfileBtn');if(_dlp)_dlp.addEventListener('click',function(){var h=currentHandle()||'profile';downloadPNG(document.querySelector('.pov-profile'),'proof-of-variational-'+h+'.png',_dlp);});
+	var _sc=document.getElementById('sortControls');if(_sc)_sc.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('.pov-sort-btn'):null;if(!b)return;sortKey=b.getAttribute('data-k')||'v';var bs=_sc.querySelectorAll('.pov-sort-btn');for(var i=0;i<bs.length;i++){bs[i].classList.toggle('active',bs[i]===b);}renderBoard();});
 
 	/* ---------- init: try live backend, fall back to preview ---------- */
 	function init(){
