@@ -74,7 +74,10 @@ section{margin-top:46px;}
 .pov-card::before{content:"";position:absolute;inset:0;background:radial-gradient(420px 200px at 88% -10%,rgba(79,210,255,0.22),transparent 60%);pointer-events:none;}
 .pov-card-top{display:flex;justify-content:space-between;align-items:center;position:relative;}
 .pov-card-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--var-cyan);}
-.pov-card-rank{font-size:13px;font-weight:800;color:#04122e;background:var(--var-cyan);padding:3px 11px;border-radius:999px;}
+.pov-card-rank{font-size:12px;font-weight:800;color:var(--var-cyan);background:rgba(79,210,255,0.12);border:1px solid rgba(79,210,255,0.30);padding:3px 10px;border-radius:999px;}
+.pov-card-src{font-size:12.5px;font-weight:800;color:var(--var-cyan);letter-spacing:.02em;text-decoration:none;}
+.pov-card-src:hover{color:#fff;text-decoration:underline;}
+.pov-card-ranks{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;position:relative;}
 .pov-card-id{display:flex;align-items:center;gap:13px;margin-top:16px;position:relative;}
 .pov-cavatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#04122e;background:var(--grad);overflow:hidden;flex:0 0 auto;position:relative;}
 .pov-cavatar img,.pov-ua img,.pov-prof-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;}
@@ -88,7 +91,7 @@ section{margin-top:46px;}
 .pov-card-chart svg{width:100%;height:100%;display:block;}
 .pov-card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;position:relative;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--text-dim);}
 .pov-card-wm{display:inline-flex;align-items:center;gap:6px;color:var(--var-cyan);}
-.pov-card-wm svg{width:16px;height:16px;}
+.pov-card-wm-logo{width:17px;height:17px;border-radius:4px;display:block;object-fit:cover;}
 
 .pov-breakdown{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px;}
 .pov-bd{background:var(--surface);border:1px solid var(--border-soft);border-radius:14px;padding:14px;}
@@ -167,6 +170,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 .pov-prof-id h1{font-size:clamp(26px,4vw,38px);font-weight:900;letter-spacing:-.01em;}
 .pov-prof-handle{color:var(--text-soft);font-size:14.5px;margin-top:4px;}
 .pov-prof-handle a{color:var(--var-cyan);}
+.pov-profile{position:relative;}
+.pov-prof-src{position:absolute;top:18px;right:22px;font-size:13px;font-weight:800;color:var(--var-cyan);text-decoration:none;letter-spacing:.02em;z-index:2;}
+.pov-prof-src:hover{color:#fff;text-decoration:underline;}
 .pov-prof-rank{display:inline-block;margin-top:11px;font-size:13px;font-weight:800;color:#04122e;background:var(--var-cyan);padding:4px 13px;border-radius:999px;}
 .pov-prof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px;}
 .pov-prof-chart{position:relative;height:210px;margin-top:18px;border-radius:14px;overflow:hidden;background:rgba(4,12,30,0.5);border:1px solid var(--border-soft);cursor:crosshair;}
@@ -234,7 +240,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			<div class="pov-card" id="card">
 				<div class="pov-card-top">
 					<span class="pov-card-eyebrow">Proof of Variational</span>
-					<span class="pov-card-rank" id="cRank">#—</span>
+					<a class="pov-card-src" id="cSrc" href="https://ogvar.xyz" target="_blank" rel="noopener">ogvar.xyz</a>
 				</div>
 				<div class="pov-card-id">
 					<span class="pov-cavatar" id="cAvatar">@</span>
@@ -242,6 +248,11 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 						<p class="pov-card-name" id="cName">handle</p>
 						<div class="pov-card-handle" id="cHandle">@handle · 0 followers</div>
 					</div>
+				</div>
+				<div class="pov-card-ranks" id="cRanks">
+					<span class="pov-card-rank" id="cRankV">👁 Views #—</span>
+					<span class="pov-card-rank" id="cRankL">❤ Likes #—</span>
+					<span class="pov-card-rank" id="cRankP">📝 Posts #—</span>
 				</div>
 				<div class="pov-card-stats">
 					<div class="pov-card-stat"><div class="k">Views</div><div class="v" id="cViews">0</div></div>
@@ -252,7 +263,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 				<div class="pov-card-foot">
 					<span id="cFirst">FIRST POST · —</span>
 					<span class="pov-card-wm">
-						<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 11 L20 30 L30 11" stroke="#4fd2ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+						<img class="pov-card-wm-logo" alt="Variational" />
 						NOW
 					</span>
 				</div>
@@ -268,6 +279,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	<section id="profileView">
 		<button class="pov-btn pov-btn-ghost pov-back" id="backBtn" type="button">← Back to leaderboard</button>
 		<div class="pov-profile">
+			<a class="pov-prof-src" href="https://ogvar.xyz" target="_blank" rel="noopener">ogvar.xyz</a>
 			<div class="pov-prof-head">
 				<span class="pov-prof-avatar" id="pAvatar">@</span>
 				<div class="pov-prof-id">
@@ -486,7 +498,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 		document.getElementById('cAvatar').innerHTML=avatarHTML(u.h,u.avatar);
 		document.getElementById('cName').textContent=u.name||u.h;
 		document.getElementById('cHandle').textContent='@'+u.h+' · '+compact(u.followers||0)+' followers';
-		document.getElementById('cRank').textContent='#'+rank;
+		var _crk=profileRanks(u);var _csr=function(id,em,lb,n){var el=document.getElementById(id);if(el)el.textContent=em+' '+lb+' #'+n;};_csr('cRankV','👁','Views',_crk.v);_csr('cRankL','❤','Likes',_crk.l);_csr('cRankP','📝','Posts',_crk.p);
 		document.getElementById('cViews').textContent=compact(u.v);
 		document.getElementById('cLikes').textContent=compact(u.l);
 		document.getElementById('cPosts').textContent=fmt(u.p);
@@ -562,7 +574,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	/* ---------- export as PNG with avatars baked in ---------- */
 	function blobToDataURL(blob){return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.onerror=rej;fr.readAsDataURL(blob);});}
 	function inlineAvatars(node){var imgs=[].slice.call(node.querySelectorAll('img'));return Promise.all(imgs.map(function(img){var src=img.getAttribute('src')||'';if(src.indexOf('data:')===0)return Promise.resolve();var h=img.getAttribute('data-h')||'';var tries=[];if(src)tries.push(src);if(h)tries.push('https://unavatar.io/twitter/'+encodeURIComponent(h));var i=0;function next(){if(i>=tries.length){img.style.display='none';return Promise.resolve();}var url=tries[i++];return fetch(url,{mode:'cors',cache:'force-cache'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(blobToDataURL).then(function(d){img.setAttribute('src',d);img.style.display='';}).catch(next);}return next();}));}
-	function downloadPNG(node,filename,btn){if(!node)return;if(typeof html2canvas==='undefined'){alert('Image export is still loading — check your connection and try again.');return;}var old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Rendering…';}inlineAvatars(node).then(function(){return html2canvas(node,{backgroundColor:'#070b16',scale:2,useCORS:true,logging:false});}).then(function(canvas){var link=document.createElement('a');link.download=filename;link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();document.body.removeChild(link);}).catch(function(){alert('Could not generate the image. Please try again.');}).then(function(){if(btn){btn.disabled=false;btn.textContent=old;}});}
+	function downloadPNG(node,filename,btn){if(!node)return;if(typeof html2canvas==='undefined'){alert('Image export is still loading — check your connection and try again.');return;}var old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Rendering…';}var _br=node.style.borderRadius;node.style.borderRadius='0';inlineAvatars(node).then(function(){return html2canvas(node,{backgroundColor:'#0b1228',scale:2,useCORS:true,logging:false});}).then(function(canvas){var link=document.createElement('a');link.download=filename;link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();document.body.removeChild(link);}).catch(function(){alert('Could not generate the image. Please try again.');}).then(function(){node.style.borderRadius=_br;if(btn){btn.disabled=false;btn.textContent=old;}});}
 
 	/* ---------- events ---------- */
 	document.getElementById('scanBtn').addEventListener('click',scan);
@@ -574,6 +586,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	window.addEventListener('hashchange',route);
 	var _dlc=document.getElementById('downloadCardBtn');if(_dlc)_dlc.addEventListener('click',function(){var h=lastShown?lastShown.h:'card';downloadPNG(document.getElementById('card'),'proof-of-variational-'+h+'.png',_dlc);});
 	var _dlp=document.getElementById('downloadProfileBtn');if(_dlp)_dlp.addEventListener('click',function(){var h=currentHandle()||'profile';downloadPNG(document.querySelector('.pov-profile'),'proof-of-variational-'+h+'.png',_dlp);});
+	(function(){var _wm=document.querySelector('.pov-card-wm-logo'),_lm=document.querySelector('.pov-logo-mark');if(_wm&&_lm)_wm.src=_lm.src;})();
 	var _sc=document.getElementById('sortControls');if(_sc)_sc.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('.pov-sort-btn'):null;if(!b)return;sortKey=b.getAttribute('data-k')||'v';var bs=_sc.querySelectorAll('.pov-sort-btn');for(var i=0;i<bs.length;i++){bs[i].classList.toggle('active',bs[i]===b);}renderBoard();});
 
 	/* ---------- init: try live backend, fall back to preview ---------- */
