@@ -51,6 +51,13 @@ const TERMS = process.env.QUERY_TERMS || '(variational OR @variational_io)';
 // account). Their own posts are never indexed or counted.
 const EXCLUDE_HANDLES = (process.env.EXCLUDE_HANDLES || 'variational_io')
 	.toLowerCase().split(',').map((s) => s.trim().replace(/^@+/, '')).filter(Boolean);
+// BACKFILL is the heavy job that pages through the FULL tweet history — this is
+// what burns large amounts of API credit. The history is already collected and
+// stored in Redis, so it stays OFF by default. The light DAILY incremental
+// update (only NEW tweets since last run) always runs regardless, so the stats
+// stay honest and current while using very few API calls. Turn full backfill
+// back ON only to rebuild history: set env BACKFILL=1 (or create "backfill.flag").
+const BACKFILL = process.env.BACKFILL === '1' || process.env.BACKFILL === 'true' || fs.existsSync(path.join(__dirname, 'backfill.flag'));
 const API = 'https://api.twitterapi.io';
 
 // ---- hard daily API budget: protects your twitterapi.io credits ----
@@ -214,7 +221,7 @@ function ingest(tweets) {
 
 // Pull a chunk of older history (resumable). Returns tweets added.
 async function backfillStep() {
-	if (store.backfillDone) return 0;
+	if (!BACKFILL || store.backfillDone) return 0;
 	const query = TERMS + ' -filter:retweets' + sinceFloorClause();
 	let cursor = store.oldestCursor || '';
 	let pages = 0, added = 0;
@@ -360,7 +367,7 @@ async function refresh() {
 
 async function getLeaderboard() {
 	if (cache.data) {
-		if (Date.now() - cache.at >= CACHE_TTL_MS && !store.backfillDone) refresh(); // background
+		if (Date.now() - cache.at >= CACHE_TTL_MS) refresh(); // background: light daily refresh, fires at most once per 24h window
 		return stamp(cache.data, cache.at);
 	}
 	await refresh();
@@ -396,7 +403,7 @@ const server = http.createServer(async (req, res) => {
 	const parsed = url.parse(req.url, true);
 	const p = parsed.pathname;
 	try {
-		if (p === '/api/health') return sendJSON(res, 200, { ok: true, hasKey: !!KEY, store: USE_REDIS ? 'redis' : 'file', indexed: store.count, backfillComplete: store.backfillDone, updateIntervalHours: UPDATE_INTERVAL_HOURS, sinceDate: SINCE_DATE || 'first post', apiCallsToday: apiCallsToday, maxRequestsPerDay: MAX_REQUESTS_PER_DAY });
+		if (p === '/api/health') return sendJSON(res, 200, { ok: true, backfillEnabled: BACKFILL, lastUpdated: store.updatedAt ? new Date(store.updatedAt).toISOString() : null, nextUpdateAt: store.updatedAt ? new Date(store.updatedAt + CACHE_TTL_MS).toISOString() : null, hasKey: !!KEY, store: USE_REDIS ? 'redis' : 'file', indexed: store.count, backfillComplete: store.backfillDone, updateIntervalHours: UPDATE_INTERVAL_HOURS, sinceDate: SINCE_DATE || 'first post', apiCallsToday: apiCallsToday, maxRequestsPerDay: MAX_REQUESTS_PER_DAY });
 		if (p === '/api/leaderboard') {
 			if (!KEY) return sendJSON(res, 503, { error: 'no_api_key' });
 			return sendJSON(res, 200, await getLeaderboard());
@@ -419,13 +426,23 @@ const server = http.createServer(async (req, res) => {
 // full history is in, just refresh on the normal daily cadence.
 (async () => {
 	await loadStore();
-	server.listen(PORT, () => console.log('Proof of VARIATIONAL on http://localhost:' + PORT + ' — indexing ' + (SINCE_DATE ? 'since ' + SINCE_DATE : 'from the first post') + ', updates every ' + UPDATE_INTERVAL_HOURS + 'h' + (KEY ? '' : ' — PREVIEW (set TWITTERAPI_KEY)')));
+	// Warm the cache from the already-collected index so the very first visitor
+	// gets the leaderboard instantly and with ZERO Twitter API calls.
+	if (store.count) {
+		try { const warm = buildSnapshot(); cache = { at: store.updatedAt || Date.now(), data: warm.data, rankMap: warm.rankMap }; }
+		catch (e) { console.warn('[warm] ' + e.message); }
+	}
+	server.listen(PORT, () => console.log('Proof of VARIATIONAL on http://localhost:' + PORT + ' — ' + (BACKFILL ? 'BACKFILL ON: rebuilding full history' : ('serving stored index; light update every ' + UPDATE_INTERVAL_HOURS + 'h')) + (KEY ? '' : ' — PREVIEW (set TWITTERAPI_KEY)')));
 	if (KEY) {
-		refresh();
+		// Only call the API on boot if we still need to (re)build history, or the
+		// stored data is already older than the 24h window. Otherwise the warm cache
+		// serves instantly and we simply wait for the next scheduled update — no
+		// wasted calls on every restart.
+		if ((BACKFILL && !store.backfillDone) || Date.now() - cache.at >= CACHE_TTL_MS) refresh();
 		setInterval(() => {
 			if (refreshing) return;
-			if (!store.backfillDone) refresh();
-			else if (Date.now() - cache.at >= CACHE_TTL_MS) refresh();
+			if (BACKFILL && !store.backfillDone) refresh();            // fast catch-up only while (re)building full history
+			else if (Date.now() - cache.at >= CACHE_TTL_MS) refresh(); // light daily incremental: only NEW tweets, minimal API
 		}, BACKFILL_INTERVAL_MS).unref();
 	}
 })();
