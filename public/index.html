@@ -171,7 +171,9 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 .pov-prof-handle{color:var(--text-soft);font-size:14.5px;margin-top:4px;}
 .pov-prof-handle a{color:var(--var-cyan);}
 .pov-profile{position:relative;}
-.pov-prof-src{position:absolute;top:18px;right:22px;font-size:13px;font-weight:800;color:var(--var-cyan);text-decoration:none;letter-spacing:.02em;z-index:2;}
+.pov-prof-src{position:absolute;top:2px;right:6px;font-size:13px;font-weight:800;color:var(--var-cyan);text-decoration:none;letter-spacing:.02em;z-index:2;}
+.pov-prof-snap{position:relative;}
+.pov-share-top{margin-top:0;margin-bottom:20px;}
 .pov-prof-src:hover{color:#fff;text-decoration:underline;}
 .pov-prof-rank{display:inline-block;margin-top:11px;font-size:13px;font-weight:800;color:#04122e;background:var(--var-cyan);padding:4px 13px;border-radius:999px;}
 .pov-prof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px;}
@@ -279,22 +281,29 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	<section id="profileView">
 		<button class="pov-btn pov-btn-ghost pov-back" id="backBtn" type="button">← Back to leaderboard</button>
 		<div class="pov-profile">
-			<a class="pov-prof-src" href="https://ogvar.xyz" target="_blank" rel="noopener">ogvar.xyz</a>
-			<div class="pov-prof-head">
-				<span class="pov-prof-avatar" id="pAvatar">@</span>
-				<div class="pov-prof-id">
-					<h1 id="pName">handle</h1>
-					<div class="pov-prof-handle"><a id="pXlink" href="#" target="_blank" rel="noopener">@handle</a> · <span id="pFollowers">0 followers</span></div>
-					<div class="pov-prof-ranks" id="pRanks"><span class="pov-prof-rank" id="pRankV">👁 Views #—</span><span class="pov-prof-rank" id="pRankL">❤ Likes #—</span><span class="pov-prof-rank" id="pRankP">📝 Posts #—</span></div>
+			<div class="pov-share-row pov-share-top">
+				<a class="pov-btn pov-btn-primary" id="pShareX" href="#" target="_blank" rel="noopener">𝕏 Share this profile</a>
+				<button class="pov-btn pov-btn-ghost" id="downloadProfileBtn" type="button">⬇ Download PNG</button>
+				<a class="pov-btn pov-btn-ghost" href="https://x.com/variational_io" target="_blank" rel="noopener">@variational_io</a>
+			</div>
+			<div class="pov-prof-snap" id="profileSnap">
+				<a class="pov-prof-src" href="https://ogvar.xyz" target="_blank" rel="noopener">ogvar.xyz</a>
+				<div class="pov-prof-head">
+					<span class="pov-prof-avatar" id="pAvatar">@</span>
+					<div class="pov-prof-id">
+						<h1 id="pName">handle</h1>
+						<div class="pov-prof-handle"><a id="pXlink" href="#" target="_blank" rel="noopener">@handle</a> · <span id="pFollowers">0 followers</span></div>
+						<div class="pov-prof-ranks" id="pRanks"><span class="pov-prof-rank" id="pRankV">👁 Views #—</span><span class="pov-prof-rank" id="pRankL">❤ Likes #—</span><span class="pov-prof-rank" id="pRankP">📝 Posts #—</span></div>
+					</div>
 				</div>
+				<div class="pov-prof-stats">
+					<div class="pov-card-stat"><div class="k">Total views</div><div class="v" id="pViews">0</div></div>
+					<div class="pov-card-stat"><div class="k">Total likes</div><div class="v" id="pLikes">0</div></div>
+					<div class="pov-card-stat"><div class="k">Total posts</div><div class="v" id="pPosts">0</div></div>
+				</div>
+				<div class="pov-prof-chart" id="pChart"></div>
+				<p class="notion-muted" id="pFirst" style="margin-top:10px"></p>
 			</div>
-			<div class="pov-prof-stats">
-				<div class="pov-card-stat"><div class="k">Total views</div><div class="v" id="pViews">0</div></div>
-				<div class="pov-card-stat"><div class="k">Total likes</div><div class="v" id="pLikes">0</div></div>
-				<div class="pov-card-stat"><div class="k">Total posts</div><div class="v" id="pPosts">0</div></div>
-			</div>
-			<div class="pov-prof-chart" id="pChart"></div>
-			<p class="notion-muted" id="pFirst" style="margin-top:10px"></p>
 			<h3 class="pov-prof-h3">Mention breakdown</h3>
 			<div class="pov-breakdown">
 				<div class="pov-bd"><div class="pov-bd-k">🔗 <span class="pov-tag">@variational_io</span></div><div class="pov-bd-v" id="pAt">0</div><div class="pov-bd-c">posts mentioning the account</div></div>
@@ -304,11 +313,6 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 			</div>
 			<h3 class="pov-prof-h3">Top posts</h3>
 			<div class="pov-posts" id="pPostsList"></div>
-			<div class="pov-share-row">
-				<a class="pov-btn pov-btn-primary" id="pShareX" href="#" target="_blank" rel="noopener">𝕏 Share this profile</a>
-				<button class="pov-btn pov-btn-ghost" id="downloadProfileBtn" type="button">⬇ Download PNG</button>
-				<a class="pov-btn pov-btn-ghost" href="https://x.com/variational_io" target="_blank" rel="noopener">@variational_io</a>
-			</div>
 		</div>
 	</section>
 
@@ -585,7 +589,7 @@ main.mode-profile #profileView{display:block;animation:povPop .4s ease;}
 	document.getElementById('homeBrand').addEventListener('click',function(){if(location.hash)location.hash='';else closeProfile();});
 	window.addEventListener('hashchange',route);
 	var _dlc=document.getElementById('downloadCardBtn');if(_dlc)_dlc.addEventListener('click',function(){var h=lastShown?lastShown.h:'card';downloadPNG(document.getElementById('card'),'proof-of-variational-'+h+'.png',_dlc);});
-	var _dlp=document.getElementById('downloadProfileBtn');if(_dlp)_dlp.addEventListener('click',function(){var h=currentHandle()||'profile';downloadPNG(document.querySelector('.pov-profile'),'proof-of-variational-'+h+'.png',_dlp);});
+	var _dlp=document.getElementById('downloadProfileBtn');if(_dlp)_dlp.addEventListener('click',function(){var h=currentHandle()||'profile';downloadPNG(document.getElementById('profileSnap'),'proof-of-variational-'+h+'.png',_dlp);});
 	(function(){var _wm=document.querySelector('.pov-card-wm-logo'),_lm=document.querySelector('.pov-logo-mark');if(_wm&&_lm)_wm.src=_lm.src;})();
 	var _sc=document.getElementById('sortControls');if(_sc)_sc.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('.pov-sort-btn'):null;if(!b)return;sortKey=b.getAttribute('data-k')||'v';var bs=_sc.querySelectorAll('.pov-sort-btn');for(var i=0;i<bs.length;i++){bs[i].classList.toggle('active',bs[i]===b);}renderBoard();});
 
