@@ -46,7 +46,7 @@ const MAX_REQUESTS_PER_DAY = parseInt(process.env.MAX_REQUESTS_PER_DAY || '500',
 const POSTS_PER_USER = parseInt(process.env.POSTS_PER_USER || '25', 10);
 const TOP_LIMIT = parseInt(process.env.TOP_LIMIT || '2000', 10);
 const STORE_FILE = process.env.STORE_FILE || path.join(__dirname, 'store.json');
-const TERMS = process.env.QUERY_TERMS || '(variational OR @variational_io OR $VAR)';
+const TERMS = process.env.QUERY_TERMS || '(variational OR @variational_io)';
 // Handles to exclude from the leaderboard/stats entirely (e.g. the project's own
 // account). Their own posts are never indexed or counted.
 const EXCLUDE_HANDLES = (process.env.EXCLUDE_HANDLES || 'variational_io')
@@ -100,7 +100,7 @@ function classify(t) {
 	const varTag = /\$var\b/i.test(text) || tags.includes('var');
 	const stripped = low.replace(/@\w+/g, ' ').replace(/https?:\/\/\S+/g, ' ').replace(/\$var\b/gi, ' ').replace(/[^a-z0-9]+/gi, ' ').trim();
 	const reply = !!t.isReply && stripped.split(' ').filter(Boolean).length >= 2;
-	return { atV, kw, varTag, reply, relevant: atV || kw || varTag };
+	return { atV, kw, varTag, reply, relevant: atV || kw };
 }
 
 // Convert a raw tweet into a compact index record (or null if not relevant).
